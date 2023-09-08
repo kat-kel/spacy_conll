@@ -30,17 +30,17 @@ CONLL_FIELD_NAMES = [
         "ext_names": None,
         "field_names": None,
         "include_headers": False,
-        "disable_pandas": False
+        "disable_pandas": False,
     },
 )
 def create_conll_formatter(
-        nlp: Language,
-        name: str,
-        conversion_maps: Optional[Dict[str, Dict[str, str]]] = None,
-        ext_names: Optional[Dict[str, str]] = None,
-        field_names: Dict[str, str] = None,
-        include_headers: bool = False,
-        disable_pandas: bool = False,
+    nlp: Language,
+    name: str,
+    conversion_maps: Optional[Dict[str, Dict[str, str]]] = None,
+    ext_names: Optional[Dict[str, str]] = None,
+    field_names: Dict[str, str] = None,
+    include_headers: bool = False,
+    disable_pandas: bool = False,
 ):
     return ConllFormatter(
         conversion_maps=conversion_maps,
@@ -104,7 +104,11 @@ class ConllFormatter:
 
     def __post_init__(self):
         # Set custom attribute names so that users can access them with their own preference
-        default_ext_names = {"conll_str": "conll_str", "conll": "conll", "conll_pd": "conll_pd"}
+        default_ext_names = {
+            "conll_str": "conll_str",
+            "conll": "conll",
+            "conll_pd": "conll_pd",
+        }
         self.ext_names = merge_dicts_strict(default_ext_names, self.ext_names)
         default_field_names = {fname: fname for fname in CONLL_FIELD_NAMES}
         self.field_names = merge_dicts_strict(default_field_names, self.field_names)
@@ -127,7 +131,10 @@ class ConllFormatter:
         for sent_idx, sent in enumerate(doc.sents, 1):
             self._set_span_conll(sent, sent_idx)
 
-        doc._.set(self.ext_names["conll"], [s._.get(self.ext_names["conll"]) for s in doc.sents])
+        doc._.set(
+            self.ext_names["conll"],
+            [s._.get(self.ext_names["conll"]) for s in doc.sents],
+        )
         doc._.set(
             self.ext_names["conll_str"],
             "\n".join([s._.get(self.ext_names["conll_str"]) for s in doc.sents]),
@@ -136,12 +143,16 @@ class ConllFormatter:
         if PD_AVAILABLE and not self.disable_pandas:
             doc._.set(
                 self.ext_names["conll_pd"],
-                pd.concat([s._.get(self.ext_names["conll_pd"]) for s in doc.sents]).reset_index(drop=True),
+                pd.concat(
+                    [s._.get(self.ext_names["conll_pd"]) for s in doc.sents]
+                ).reset_index(drop=True),
             )
 
         return doc
 
-    def _map_conll(self, token_conll_d: Dict[str, Union[str, int]]) -> Dict[str, Union[str, int]]:
+    def _map_conll(
+        self, token_conll_d: Dict[str, Union[str, int]]
+    ) -> Dict[str, Union[str, int]]:
         """Maps labels according to a given `self._conversion_maps`.
         This can be useful when users want to change the output labels of a
         model to their own tagset.
@@ -167,14 +178,18 @@ class ConllFormatter:
         if self.include_headers:
             # Get metadata from custom extension or create it ourselves
             if not (span.has_extension("conll_metadata") and span._.conll_metadata):
-                span._.conll_metadata = f"# sent_id = {span_idx}\n# text = {span.text}\n"
+                span._.conll_metadata = (
+                    f"# sent_id = {span_idx}\n# text = {span.text}\n"
+                )
 
             span_conll_str += span._.conll_metadata
 
         for token_idx, token in enumerate(span, 1):
             self._set_token_conll(token, token_idx)
 
-        span._.set(self.ext_names["conll"], [t._.get(self.ext_names["conll"]) for t in span])
+        span._.set(
+            self.ext_names["conll"], [t._.get(self.ext_names["conll"]) for t in span]
+        )
         span_conll_str += "".join([t._.get(self.ext_names["conll_str"]) for t in span])
         span._.set(self.ext_names["conll_str"], span_conll_str)
 
@@ -199,7 +214,7 @@ class ConllFormatter:
         token_conll = (
             token_idx,
             token.text,
-            token.lemma_ if token.lemma_ else "_",
+            token.lemma_ if token.lemma_ else token.text,
             token.pos_,
             token.tag_,
             str(token.morph) if token.has_morph and str(token.morph) else "_",
