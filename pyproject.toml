@@ -1,0 +1,20 @@
+[project]
+authors = [
+    { name = "Bram Vanroy", email = "bramvanroy@hotmail.com" },
+]
+dependencies = ["spacy>=3.0.1"]
+description = "A custom pipeline component for spaCy that can convert any parsed Doc and its sentences into CoNLL-U format. Also provides a command line entry point."
+keywords = ["nlp", "spacy", "spacy-extension", "conll", "conllu", "tagging", "parsing", "stanza", "spacy_stanza", "udpipe", "spacy_udpipe"]
+license = { text = "BSD 2" }
+name = "spacy_conll"
+readme = "README.md"
+requires-python = ">=3.6"
+version = "3.4.0"
+
+
+[project.scripts]
+parse-as-conll = "spacy_conll.cli.parse:main"
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
